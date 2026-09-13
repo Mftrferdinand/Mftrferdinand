@@ -4,11 +4,6 @@
 
 I’m **Mahesa F. Ferdinand**, leading Zerolinear and building practical, open-source AI agents. I care about developer-first systems that stay under your control: portable across model providers, extensible with real tools, and deployable on infrastructure you own.
 
-### Focus
-- **Agentic AI** — Multi-step autonomous reasoning, tool execution, and delegation pipelines.
-- **LLM Infrastructure** — Model-agnostic routing, persistent context engines, and secure runtimes.
-- **Agent Evaluation** — Deterministic benchmarks, behavioral safety, and task completion scoring.
-- **Observability** — Real-time execution tracing, tool inspection, and failure recovery.
+Currently focused on agentic AI, LLM infrastructure, agent evaluation, and observability.
 
-### Active Work
-- **[Zeline](https://github.com/Mftrferdinand/Zeline)** — Open-source, model-agnostic, self-hostable agentic AI framework with native tool calling, persistent memory, messaging gateways, browser automation, and scheduled tasks.
+Building **[Zeline](https://github.com/Mftrferdinand/Zeline)** — an open-source, model-agnostic, self-hostable agentic AI framework with native tool calling, persistent memory, messaging gateways, headless browser automation, and scheduled tasks.
