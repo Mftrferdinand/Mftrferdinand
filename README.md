@@ -13,52 +13,52 @@ Currently building and maintaining **Zeline** — an open-source, model-agnostic
 <table width="100%">
 <tr><td colspan="3"><b>Core Runtime &amp; Languages</b></td></tr>
 <tr>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Python-2563eb?style=for-the-badge&logo=python&logoColor=white" alt="Python" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/TypeScript-2563eb?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Node.js-2563eb?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" height="26" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Python-2563eb?style=for-the-badge&logo=python&logoColor=white" alt="Python" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/TypeScript-2563eb?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Node.js-2563eb?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" /></td>
 </tr>
 <tr>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/FastAPI-2563eb?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/SQLite-2563eb?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Redis-2563eb?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" height="26" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/FastAPI-2563eb?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/SQLite-2563eb?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Redis-2563eb?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" /></td>
 </tr>
 </table>
 
 <table width="100%">
 <tr><td colspan="3"><b>Infrastructure &amp; Orchestration</b></td></tr>
 <tr>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Docker-2563eb?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Linux-2563eb?style=for-the-badge&logo=linux&logoColor=white" alt="Linux" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Ubuntu-2563eb?style=for-the-badge&logo=ubuntu&logoColor=white" alt="Ubuntu" height="26" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Docker-2563eb?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Linux-2563eb?style=for-the-badge&logo=linux&logoColor=white" alt="Linux" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Ubuntu-2563eb?style=for-the-badge&logo=ubuntu&logoColor=white" alt="Ubuntu" /></td>
 </tr>
 <tr>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Nginx-2563eb?style=for-the-badge&logo=nginx&logoColor=white" alt="Nginx" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Cloudflare-2563eb?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Git-2563eb?style=for-the-badge&logo=git&logoColor=white" alt="Git" height="26" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Nginx-2563eb?style=for-the-badge&logo=nginx&logoColor=white" alt="Nginx" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Cloudflare-2563eb?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Git-2563eb?style=for-the-badge&logo=git&logoColor=white" alt="Git" /></td>
 </tr>
 <tr>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/GitHub_Actions-2563eb?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions" height="26" /></td>
-<td width="33%" align="center"></td>
-<td width="33%" align="center"></td>
+<td width="33%"><img src="https://img.shields.io/badge/GitHub_Actions-2563eb?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions" /></td>
+<td width="33%"></td>
+<td width="33%"></td>
 </tr>
 </table>
 
 <table width="100%">
 <tr><td colspan="3"><b>AI, Automation &amp; Developer Tooling</b></td></tr>
 <tr>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Playwright-2563eb?style=for-the-badge&logo=playwright&logoColor=white" alt="Playwright" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/OpenAI_API-2563eb?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI API" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/DeepSeek-2563eb?style=for-the-badge&logo=deepseek&logoColor=white" alt="DeepSeek" height="26" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Playwright-2563eb?style=for-the-badge&logo=playwright&logoColor=white" alt="Playwright" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/OpenAI_API-2563eb?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI API" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/DeepSeek-2563eb?style=for-the-badge&logo=deepseek&logoColor=white" alt="DeepSeek" /></td>
 </tr>
 <tr>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Anthropic-2563eb?style=for-the-badge&logo=anthropic&logoColor=white" alt="Anthropic" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Hugging_Face-2563eb?style=for-the-badge&logo=huggingface&logoColor=white" alt="Hugging Face" height="26" /></td>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Telegram_Bot_API-2563eb?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Bot API" height="26" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Anthropic-2563eb?style=for-the-badge&logo=anthropic&logoColor=white" alt="Anthropic" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Hugging_Face-2563eb?style=for-the-badge&logo=huggingface&logoColor=white" alt="Hugging Face" /></td>
+<td width="33%"><img src="https://img.shields.io/badge/Telegram_Bot_API-2563eb?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Bot API" /></td>
 </tr>
 <tr>
-<td width="33%" align="center"><img src="https://img.shields.io/badge/Pytest-2563eb?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest" height="26" /></td>
-<td width="33%" align="center"></td>
-<td width="33%" align="center"></td>
+<td width="33%"><img src="https://img.shields.io/badge/Pytest-2563eb?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest" /></td>
+<td width="33%"></td>
+<td width="33%"></td>
 </tr>
 </table>
 
