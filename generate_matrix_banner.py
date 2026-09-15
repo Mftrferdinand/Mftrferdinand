@@ -50,7 +50,7 @@ for t in phrases:
     phrase_data.append({"text": t, "w": w, "sx": sx, "sy": sy, "chars": char_positions})
 
 # Warna dasar: 100% BIRU SOLID MURNI (#2563eb)
-BLUE = (37, 99, 235, 255)
+BLUE = (34, 91, 216, 255)
 
 # Karakter untuk background matrix / CLI rain
 CODE_CHARS = list("0123456789ABCDEF010101<>{}[]/*+=-~$#@!_?%&|:;")
