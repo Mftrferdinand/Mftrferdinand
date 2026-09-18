@@ -1,6 +1,6 @@
-from PIL import Image, ImageDraw, ImageFont
+import math
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageChops
 
-# Ukuran & Supersampling
 W, H = 1000, 150
 SS = 2
 bw, bh = W * SS, H * SS
@@ -14,7 +14,6 @@ phrases = ["MFTRFERDINAND", "ZEROLINEAR", "ZELINE AGENTIC AI"]
 dummy = Image.new("RGBA", (1, 1))
 dd = ImageDraw.Draw(dummy)
 
-# Hitung optical center huruf kapital
 cap_bbox = dd.textbbox((0, 0), "H", font=font_title)
 cap_h = cap_bbox[3] - cap_bbox[1]
 cap_top_off = cap_bbox[1]
@@ -28,12 +27,23 @@ for t in phrases:
     sy = (mid_y - cap_h // 2) - cap_top_off
     phrase_data.append({"text": t, "w": w, "sx": sx, "sy": sy})
 
-# Background: HITAM SOLID PEKAT (#000000)
 BLACK = (0, 0, 0, 255)
 
-FRAMES_PER_PHRASE = 36
+def ease_out_cubic(x):
+    return 1 - math.pow(1 - x, 3)
+
+def ease_in_cubic(x):
+    return math.pow(x, 3)
+
+FRAMES_PER_PHRASE = 38
+TRANS_IN = 10
+HOLD = 20
+TRANS_OUT = 8
+
 TOTAL_FRAMES = len(phrase_data) * FRAMES_PER_PHRASE
 frames = []
+
+print(f"Rendering {TOTAL_FRAMES} frames...")
 
 for gi in range(TOTAL_FRAMES):
     pi = gi // FRAMES_PER_PHRASE
@@ -42,22 +52,75 @@ for gi in range(TOTAL_FRAMES):
 
     canvas = Image.new("RGBA", (bw, bh), BLACK)
 
-    # Smooth fade in (10 frame), solid hold (20 frame), fade out (6 frame)
-    if li < 10:
-        alpha = int((li / 10.0) * 255)
-    elif li < 30:
-        alpha = 255
+    # State timing:
+    if li < TRANS_IN:
+        progress = li / float(TRANS_IN)
+        alpha = ease_out_cubic(progress)
+        # Meluncur naik lembut dari +14px ke 0
+        y_offset = int((1.0 - ease_out_cubic(progress)) * (14 * SS))
+        shimmer_pos = -0.5
+    elif li < TRANS_IN + HOLD:
+        alpha = 1.0
+        y_offset = 0
+        hold_prog = (li - TRANS_IN) / float(HOLD)
+        # Shimmer melintasi teks dari kiri ke kanan secara smooth
+        shimmer_pos = -0.2 + 1.4 * hold_prog
     else:
-        alpha = int((1.0 - (li - 30) / 6.0) * 255)
+        out_prog = (li - (TRANS_IN + HOLD)) / float(TRANS_OUT)
+        alpha = 1.0 - ease_in_cubic(out_prog)
+        # Meluncur naik tipis saat keluar (0 ke -10px)
+        y_offset = -int(ease_in_cubic(out_prog) * (10 * SS))
+        shimmer_pos = 1.5
 
+    cur_sy = cp["sy"] + y_offset
+
+    # Layer teks dasar putih tajam
     text_canvas = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
     t_draw = ImageDraw.Draw(text_canvas)
-    t_draw.text((cp["sx"], cp["sy"]), cp["text"], font=font_title, fill=(255, 255, 255, alpha))
+    fill_alpha = int(alpha * 255)
+    t_draw.text((cp["sx"], cur_sy), cp["text"], font=font_title, fill=(255, 255, 255, fill_alpha))
+
+    # Glow layer halus di belakang teks saat hold
+    if alpha > 0.3:
+        glow_mask = text_canvas.split()[3].filter(ImageFilter.GaussianBlur(8 * SS))
+        glow_layer = Image.new("RGBA", (bw, bh), (255, 255, 255, 0))
+        # Ambient subtle white glow
+        glow_intensity = int(alpha * 38)
+        glow_alpha_channel = glow_mask.point(lambda p: int(p * (glow_intensity / 255.0)))
+        glow_layer.putalpha(glow_alpha_channel)
+        canvas = Image.alpha_composite(canvas, glow_layer)
+
+    # Shimmer ray effect (cahaya perak bergerak di atas teks)
+    if -0.2 <= shimmer_pos <= 1.2 and fill_alpha > 100:
+        ray_center = cp["sx"] + int(cp["w"] * shimmer_pos)
+        ray_width = int(140 * SS)
+        
+        # Mask shimmer
+        shimmer_img = Image.new("L", (bw, bh), 0)
+        s_draw = ImageDraw.Draw(shimmer_img)
+        # Gambar pita miring (sheared beam)
+        poly = [
+            (ray_center - ray_width + 40 * SS, 0),
+            (ray_center + 40 * SS, 0),
+            (ray_center + ray_width - 40 * SS, bh),
+            (ray_center - 40 * SS, bh)
+        ]
+        s_draw.polygon(poly, fill=255)
+        shimmer_blurred = shimmer_img.filter(ImageFilter.GaussianBlur(12 * SS))
+        
+        # Kali dengan alpha channel teks agar shimmer hanya muncul di dalam badan teks
+        shimmer_text_mask = ImageChops.multiply(text_canvas.split()[3], shimmer_blurred)
+        
+        # Tambahkan shimmer layer (putih ekstra terang 100%)
+        shimmer_layer = Image.new("RGBA", (bw, bh), (255, 255, 255, 0))
+        shimmer_layer.putalpha(shimmer_text_mask)
+        text_canvas = Image.alpha_composite(text_canvas, shimmer_layer)
 
     canvas = Image.alpha_composite(canvas, text_canvas)
+
     final_frame = canvas.resize((W, H), Image.Resampling.LANCZOS)
     frames.append(
-        final_frame.convert("RGB").quantize(colors=32, method=Image.FASTOCTREE, dither=Image.Dither.NONE)
+        final_frame.convert("RGB").quantize(colors=48, method=Image.FASTOCTREE, dither=Image.Dither.NONE)
     )
 
 out_path = "/data/data/com.termux/files/home/Mftrferdinand-profile/assets/zerolinear-banner.gif"
@@ -65,8 +128,8 @@ frames[0].save(
     out_path,
     save_all=True,
     append_images=frames[1:],
-    duration=55,
+    duration=50,
     loop=0,
     optimize=True,
 )
-print("Saved clean banner to", out_path)
+print("Finished saving:", out_path)
