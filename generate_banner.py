@@ -16,9 +16,9 @@ font_light = ImageFont.truetype(font_path_light, FONT_SIZE)
 
 # Phrases to cycle ultra-cleanly
 phrases = [
-    {"main": "MFTRFERDINAND", "sub": "AI & WEB3 ARCHITECT"},
-    {"main": "ZEROLINEAR", "sub": "AUTONOMOUS AGENTIC AI"},
-    {"main": "ZELINE", "sub": "MODEL-AGNOSTIC AI FRAMEWORK"},
+    {"main": "MFTRFERDINAND", "sub": ""},
+    {"main": "ZEROLINEAR", "sub": ""},
+    {"main": "ZELINE AGENTIC AI", "sub": ""},
 ]
 
 dummy = Image.new("RGBA", (1, 1))
@@ -59,35 +59,14 @@ for gi in range(TOTAL_FRAMES):
     main_bbox = dd.textbbox((0, 0), p["main"], font=font_bold)
     main_w = main_bbox[2] - main_bbox[0]
     main_h = main_bbox[3] - main_bbox[1]
-    
-    sub_bbox = dd.textbbox((0, 0), p["sub"], font=font_light)
-    sub_w = sub_bbox[2] - sub_bbox[0]
-    sub_h = sub_bbox[3] - sub_bbox[1]
-    
-    spacing = 14 * SS
-    total_h = main_h + spacing + sub_h
-    start_y = (bh - total_h) // 2 - main_bbox[1]
 
     main_x = (bw - main_w) // 2 - main_bbox[0]
-    sub_x = (bw - sub_w) // 2 - sub_bbox[0]
-    sub_y = start_y + main_h + spacing
+    start_y = (bh - main_h) // 2 - main_bbox[1]
 
     # Draw Main Text (Smooth Fade)
     m_r, m_g, m_b = TEXT_MAIN
     main_color = (m_r, m_g, m_b, int(255 * alpha))
     draw.text((main_x, start_y), p["main"], font=font_bold, fill=main_color)
-
-    # Accent Dot next to Main text
-    dot_size = 6 * SS
-    dot_x = main_x + main_w + (12 * SS)
-    dot_y = start_y + (main_h // 2) - (dot_size // 2)
-    acc_r, acc_g, acc_b = ACCENT_BLUE
-    draw.ellipse([dot_x, dot_y, dot_x + dot_size, dot_y + dot_size], fill=(acc_r, acc_g, acc_b, int(255 * alpha)))
-
-    # Draw Subtitle
-    s_r, s_g, s_b = TEXT_SUB
-    sub_color = (s_r, s_g, s_b, int(180 * alpha))
-    draw.text((sub_x, sub_y), p["sub"], font=font_light, fill=sub_color)
 
     # Downsample Lanczos for pristine crisp text rendering
     final_frame = canvas.resize((W, H), Image.Resampling.LANCZOS)
