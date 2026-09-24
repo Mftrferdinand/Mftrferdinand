@@ -25,9 +25,9 @@ dummy = Image.new("RGBA", (1, 1))
 dd = ImageDraw.Draw(dummy)
 
 # Setup colors & measurements
-BG_COLOR = (10, 11, 14, 255) # Deep sleek graphite background
-TEXT_MAIN = (240, 243, 248) # Off-white crisp text
-TEXT_SUB = (120, 130, 145) # Subtle slate muted subtitle
+BG_COLOR = (0, 0, 0, 255) # Pure black background
+TEXT_MAIN = (59, 130, 246) # Crisp blue text
+TEXT_SUB = (37, 99, 235) # Deeper blue muted subtitle
 ACCENT_BLUE = (59, 130, 246) # Crisp minimalist accent dot / line
 
 FRAMES_PER_PHRASE = 30
