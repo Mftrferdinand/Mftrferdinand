@@ -1,27 +1,16 @@
 import math
-import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageChops
 
-W, H = 1000, 160
+# Banner canvas — lebar penuh README, super-sampled 2x biar tajam.
+W, H = 1000, 200
 SS = 2
 bw, bh = W * SS, H * SS
 
 font_title_path = "/data/data/com.termux/files/usr/share/fonts/TTF/DejaVuSans-Bold.ttf"
-font_sub_path = (
-    "/data/data/com.termux/files/usr/share/fonts/TTF/DejaVuSansMono-Bold.ttf"
-)
+font_title = ImageFont.truetype(font_title_path, 58 * SS)
 
-FONT_SIZE = 54 * SS
-SUB_FONT_SIZE = 14 * SS
-
-font_title = ImageFont.truetype(font_title_path, FONT_SIZE)
-font_sub = ImageFont.truetype(font_sub_path, SUB_FONT_SIZE)
-
-phrases = [
-    {"main": "MFTRFERDINAND", "tag": "SYSTEM OPERATOR // ZEROLINEAR"},
-    {"main": "ZEROLINEAR", "tag": "AUTONOMOUS RESEARCH LAB"},
-    {"main": "ZELINE AGENTIC AI", "tag": "HIGH-AGENCY INTELLIGENCE FRAMEWORK"},
-]
+# HANYA 3 frase, TANPA tagline.
+phrases = ["MFTRFERDINAND", "ZEROLINEAR", "ZELINE AGENTIC AI"]
 
 dummy = Image.new("RGBA", (1, 1))
 dd = ImageDraw.Draw(dummy)
@@ -29,15 +18,14 @@ dd = ImageDraw.Draw(dummy)
 cap_bbox = dd.textbbox((0, 0), "H", font=font_title)
 cap_h = cap_bbox[3] - cap_bbox[1]
 cap_top_off = cap_bbox[1]
-mid_y = (bh // 2) - 10 * SS
+mid_y = bh // 2
 
-LETTER_SPACING = 4 * SS
+LETTER_SPACING = 5 * SS
 
 
-def layout_phrase(p_dict):
-    text = p_dict["main"]
-    total_w = 0
+def layout_phrase(text):
     metrics = []
+    total_w = 0
     for ch in text:
         cb = dd.textbbox((0, 0), ch, font=font_title)
         cw = cb[2] - cb[0]
@@ -51,23 +39,7 @@ def layout_phrase(p_dict):
     for ch, cw, cbx in metrics:
         chars.append({"ch": ch, "x": x - cbx, "cw": cw})
         x += cw + LETTER_SPACING
-
-    tag_text = p_dict["tag"]
-    tb = dd.textbbox((0, 0), tag_text, font=font_sub)
-    tw = tb[2] - tb[0]
-    tag_x = (bw - tw) // 2
-    tag_y = base_y + cap_h + 18 * SS
-
-    return {
-        "text": text,
-        "tag": tag_text,
-        "chars": chars,
-        "w": total_w,
-        "start_x": start_x,
-        "base_y": base_y,
-        "tag_x": tag_x,
-        "tag_y": tag_y,
-    }
+    return {"text": text, "chars": chars, "w": total_w, "start_x": start_x, "base_y": base_y}
 
 
 phrase_data = [layout_phrase(p) for p in phrases]
@@ -86,97 +58,91 @@ def ease_in_out(x):
 
 
 TRANS_IN = 14
-HOLD = 24
+HOLD = 26
 TRANS_OUT = 12
 FRAMES_PER_PHRASE = TRANS_IN + HOLD + TRANS_OUT
 TOTAL_FRAMES = len(phrase_data) * FRAMES_PER_PHRASE
 
-print(f"Generating {TOTAL_FRAMES} frames on luxury white aesthetic...")
+print(f"Generating {TOTAL_FRAMES} frames — blue animated bg, white text...")
+
+# ── Palet biru ──
+BLUE_TOP = (7, 18, 48)       # navy pekat
+BLUE_MID = (16, 42, 96)      # biru royal gelap
+BLUE_BOT = (9, 24, 60)       # navy
+ACCENT = (56, 132, 255)      # electric blue
+GLOW = (120, 180, 255)       # cyan-biru terang
+
+
+def lerp(a, b, t):
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+
+# Precompute vertical gradient sekali (statis) — animasi lewat overlay.
+grad = Image.new("RGBA", (bw, bh))
+gpx = grad.load()
+for y in range(bh):
+    ty = y / bh
+    if ty < 0.5:
+        col = lerp(BLUE_TOP, BLUE_MID, ty / 0.5)
+    else:
+        col = lerp(BLUE_MID, BLUE_BOT, (ty - 0.5) / 0.5)
+    for x in range(bw):
+        gpx[x, y] = (col[0], col[1], col[2], 255)
 
 
 def make_bg(t_global):
-    # Pure clean white to subtle warm off-white (253, 253, 254)
-    base = Image.new("RGBA", (bw, bh), (252, 252, 254, 255))
+    base = grad.copy()
+
+    # 1) Grid titik halus yang bergeser pelan (efek gerak konstan)
     bd = ImageDraw.Draw(base)
-
-    # Ultra-refined subtle grid pattern (dot grid)
-    grid_gap = 25 * SS
-    offset_x = int((t_global * 50 * SS) % grid_gap)
-    dot_color = (226, 230, 238, 255)
-    for gx in range(offset_x, bw, grid_gap):
+    grid_gap = 28 * SS
+    off = int((t_global * 60 * SS) % grid_gap)
+    dot = (70, 120, 210, 255)
+    for gx in range(off, bw, grid_gap):
         for gy in range(0, bh, grid_gap):
-            bd.point((gx, gy), fill=dot_color)
-            bd.point((gx + 1, gy), fill=dot_color)
-            bd.point((gx, gy + 1), fill=dot_color)
-            bd.point((gx + 1, gy + 1), fill=dot_color)
+            bd.point((gx, gy), fill=dot)
+            bd.point((gx + 1, gy), fill=dot)
 
-    # Elegant diagonal ambient beam/sheen (very soft cool silver/blue tint)
+    # 2) Dua "aurora" biru yang mengalir (radial glow bergerak sinus)
+    aur = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
+    ad = ImageDraw.Draw(aur)
+    cx1 = bw * (0.30 + 0.18 * math.sin(t_global * math.pi * 2))
+    cy1 = bh * (0.35 + 0.15 * math.cos(t_global * math.pi * 2 * 0.8))
+    r1 = bw * 0.34
+    ad.ellipse([cx1 - r1, cy1 - r1, cx1 + r1, cy1 + r1], fill=(40, 100, 220, 90))
+    cx2 = bw * (0.72 - 0.16 * math.cos(t_global * math.pi * 2 * 1.1))
+    cy2 = bh * (0.6 + 0.18 * math.sin(t_global * math.pi * 2 * 0.7))
+    r2 = bw * 0.30
+    ad.ellipse([cx2 - r2, cy2 - r2, cx2 + r2, cy2 + r2], fill=(30, 150, 235, 80))
+    aur = aur.filter(ImageFilter.GaussianBlur(70 * SS))
+    base = Image.alpha_composite(base, aur)
+
+    # 3) Diagonal sheen menyapu (light beam)
     sweep = (t_global * 2.0) % 1.0
     cx = int(-bw * 0.3 + sweep * bw * 1.6)
-    w = int(bw * 0.3)
+    w = int(bw * 0.22)
     band = Image.new("L", (bw, bh), 0)
-    band_d = ImageDraw.Draw(band)
-    band_d.polygon(
+    ImageDraw.Draw(band).polygon(
         [(cx, 0), (cx + w, 0), (cx + w - bh * 0.8, bh), (cx - bh * 0.8, bh)], fill=255
     )
-    band = band.filter(ImageFilter.GaussianBlur(50 * SS))
-    sheen = Image.new("RGBA", (bw, bh), (235, 240, 255, 255))
-    sheen.putalpha(band.point(lambda p: int(p * 0.45)))
+    band = band.filter(ImageFilter.GaussianBlur(55 * SS))
+    sheen = Image.new("RGBA", (bw, bh), (150, 195, 255, 255))
+    sheen.putalpha(band.point(lambda p: int(p * 0.30)))
     base = Image.alpha_composite(base, sheen)
 
-    # Subtle border top and bottom for luxury tech frame
-    line_c = (230, 233, 240, 255)
-    accent_blue = (37, 99, 235, 255)  # Electric blue accent
+    # 4) Frame tepi + corner bracket accent (electric blue)
     bd = ImageDraw.Draw(base)
+    line_c = (60, 110, 200, 255)
     bd.line([(0, 0), (bw, 0)], fill=line_c, width=2 * SS)
     bd.line([(0, bh - 2 * SS), (bw, bh - 2 * SS)], fill=line_c, width=2 * SS)
-
-    # Subtle corner bracket accents
-    bracket_len = 16 * SS
-    # Top-left
-    bd.line(
-        [(8 * SS, 8 * SS), (8 * SS + bracket_len, 8 * SS)],
-        fill=accent_blue,
-        width=2 * SS,
-    )
-    bd.line(
-        [(8 * SS, 8 * SS), (8 * SS, 8 * SS + bracket_len)],
-        fill=accent_blue,
-        width=2 * SS,
-    )
-    # Top-right
-    bd.line(
-        [(bw - 8 * SS - bracket_len, 8 * SS), (bw - 8 * SS, 8 * SS)],
-        fill=accent_blue,
-        width=2 * SS,
-    )
-    bd.line(
-        [(bw - 8 * SS, 8 * SS), (bw - 8 * SS, 8 * SS + bracket_len)],
-        fill=accent_blue,
-        width=2 * SS,
-    )
-    # Bottom-left
-    bd.line(
-        [(8 * SS, bh - 8 * SS), (8 * SS + bracket_len, bh - 8 * SS)],
-        fill=accent_blue,
-        width=2 * SS,
-    )
-    bd.line(
-        [(8 * SS, bh - 8 * SS), (8 * SS, bh - 8 * SS - bracket_len)],
-        fill=accent_blue,
-        width=2 * SS,
-    )
-    # Bottom-right
-    bd.line(
-        [(bw - 8 * SS - bracket_len, bh - 8 * SS), (bw - 8 * SS, bh - 8 * SS)],
-        fill=accent_blue,
-        width=2 * SS,
-    )
-    bd.line(
-        [(bw - 8 * SS, bh - 8 * SS), (bw - 8 * SS, bh - 8 * SS - bracket_len)],
-        fill=accent_blue,
-        width=2 * SS,
-    )
+    bl = 18 * SS
+    m = 9 * SS
+    for (ox, oy, dx, dy) in [
+        (m, m, 1, 1), (bw - m, m, -1, 1),
+        (m, bh - m, 1, -1), (bw - m, bh - m, -1, -1),
+    ]:
+        bd.line([(ox, oy), (ox + dx * bl, oy)], fill=ACCENT + (255,), width=2 * SS)
+        bd.line([(ox, oy), (ox, oy + dy * bl)], fill=ACCENT + (255,), width=2 * SS)
 
     return base
 
@@ -201,103 +167,66 @@ for gi in range(TOTAL_FRAMES):
     else:
         phase, pout = "out", (li - (TRANS_IN + HOLD)) / float(TRANS_OUT)
 
-    # Render Main Text (Pitch Black with smooth float + optical weight)
+    # Teks PUTIH dengan float + fade
     for ci, cinfo in enumerate(cp["chars"]):
         if phase == "in":
             stagger = ci / float(max(1, n_chars)) * 0.5
-            local = max(0.0, min(1.0, (pin - stagger) / (1.0 - 0.5)))
+            local = max(0.0, min(1.0, (pin - stagger) / 0.5))
             e = ease_out_cubic(local)
             ca = e
-            y_off = int((1.0 - e) * (18 * SS))
-            # Blur dissipation
-            blur = (1.0 - e) * 4.0 * SS
+            y_off = int((1.0 - e) * (20 * SS))
         elif phase == "hold":
             ca = 1.0
-            wave = math.sin(phold * math.pi * 2 * 1.5 - ci * 0.55)
-            y_off = int(wave * 2.2 * SS)
-            blur = 0.0
+            wave = math.sin(phold * math.pi * 2 * 1.4 - ci * 0.5)
+            y_off = int(wave * 2.4 * SS)
         else:
             e = ease_in_cubic(pout)
             ca = 1.0 - e
-            y_off = -int(e * 14 * SS)
-            blur = e * 3.0 * SS
+            y_off = -int(e * 16 * SS)
 
         if ca <= 0.02:
             continue
-
-        # Crisp deep obsidian / dark slate (#09090b)
-        text_color = (10, 10, 15, int(ca * 255))
+        # PUTIH bersih
         t_draw.text(
             (cinfo["x"], cp["base_y"] + y_off),
             cinfo["ch"],
             font=font_title,
-            fill=text_color,
+            fill=(255, 255, 255, int(ca * 255)),
         )
 
-    # Soft ambient drop shadow underneath text for 3D premium elevation
-    shadow_mask = text_canvas.split()[3].filter(ImageFilter.GaussianBlur(6 * SS))
-    shadow_layer = Image.new("RGBA", (bw, bh), (30, 40, 60, 0))
-    shadow_layer.putalpha(shadow_mask.point(lambda p: int(p * 0.22)))
-    # Shift shadow down slightly
-    shadow_shifted = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
-    shadow_shifted.paste(shadow_layer, (0, int(4 * SS)))
-    canvas = Image.alpha_composite(canvas, shadow_shifted)
+    # Glow biru di belakang teks (bikin putih "menyala")
+    glow_mask = text_canvas.split()[3].filter(ImageFilter.GaussianBlur(7 * SS))
+    glow_layer = Image.new("RGBA", (bw, bh), GLOW + (0,))
+    glow_layer.putalpha(glow_mask.point(lambda p: int(p * 0.55)))
+    canvas = Image.alpha_composite(canvas, glow_layer)
 
-    # Shimmer gleam across text during hold
+    # Shimmer cahaya menyapu teks saat hold
     if phase == "hold":
         shimmer_pos = -0.3 + 1.6 * ease_in_out(phold)
         ray_center = cp["start_x"] + int(cp["w"] * shimmer_pos)
-        ray_width = int(140 * SS)
+        ray_w = int(150 * SS)
         s_img = Image.new("L", (bw, bh), 0)
-        s_draw = ImageDraw.Draw(s_img)
-        s_draw.polygon(
+        ImageDraw.Draw(s_img).polygon(
             [
-                (ray_center - ray_width + 40 * SS, 0),
+                (ray_center - ray_w + 40 * SS, 0),
                 (ray_center + 40 * SS, 0),
-                (ray_center + ray_width - 40 * SS, bh),
+                (ray_center + ray_w - 40 * SS, bh),
                 (ray_center - 40 * SS, bh),
             ],
             fill=255,
         )
-        s_blur = s_img.filter(ImageFilter.GaussianBlur(8 * SS))
+        s_blur = s_img.filter(ImageFilter.GaussianBlur(9 * SS))
         s_mask = ImageChops.multiply(text_canvas.split()[3], s_blur)
-
-        # Electric royal blue / cyan light pass (#2563eb)
-        shimmer_color = Image.new("RGBA", (bw, bh), (37, 99, 235, 0))
-        shimmer_color.putalpha(s_mask.point(lambda p: int(p * 0.9)))
-        text_canvas = Image.alpha_composite(text_canvas, shimmer_color)
-
-    # Render Subtitle / Tagline
-    tag_canvas = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
-    tag_draw = ImageDraw.Draw(tag_canvas)
-
-    if phase == "in":
-        tag_alpha = max(0.0, min(1.0, (pin - 0.4) / 0.6))
-        tag_y_shift = int((1.0 - tag_alpha) * (6 * SS))
-    elif phase == "hold":
-        tag_alpha = 1.0
-        tag_y_shift = 0
-    else:
-        tag_alpha = 1.0 - pout
-        tag_y_shift = -int(pout * (6 * SS))
-
-    if tag_alpha > 0.02:
-        # Subtle slate gray (#64748b) for secondary typography
-        tag_color = (100, 116, 139, int(tag_alpha * 255))
-        tag_draw.text(
-            (cp["tag_x"], cp["tag_y"] + tag_y_shift),
-            cp["tag"],
-            font=font_sub,
-            fill=tag_color,
-        )
+        shimmer = Image.new("RGBA", (bw, bh), (190, 220, 255, 0))
+        shimmer.putalpha(s_mask.point(lambda p: int(p * 0.95)))
+        text_canvas = Image.alpha_composite(text_canvas, shimmer)
 
     canvas = Image.alpha_composite(canvas, text_canvas)
-    canvas = Image.alpha_composite(canvas, tag_canvas)
 
     final_frame = canvas.resize((W, H), Image.Resampling.LANCZOS)
     frames.append(
         final_frame.convert("RGB").quantize(
-            colors=128, method=Image.FASTOCTREE, dither=Image.Dither.NONE
+            colors=200, method=Image.FASTOCTREE, dither=Image.Dither.NONE
         )
     )
 
